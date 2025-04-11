@@ -4,7 +4,7 @@
 samples: config/sample.csv
 
 # Path to your raw sequencing reads  
-reads: /nfs/turbo/umms-esnitkin/Public_data_download
+short_reads: /nfs/turbo/umms-esnitkin/Public_data_download
 
 # Directory prefix where the outputs will be saved to
 # Rename this to your preferred naming convention with this format:year-month-day_Project_Name_pubQCD
