@@ -1,8 +1,0 @@
-name: samples_path
-channels:
-  - conda-forge
-  - bioconda
-  - defaults
-dependencies:
-  - ruamel.yaml
-  

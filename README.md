@@ -1,6 +1,8 @@
 # pubQCD - Public datasets Quality Control and Contamination Detection workflow
 
-pubQCD is a quality control pipeline for datasets downloaded from public database implemented in Snakemake.
+pubQCD is a quality control pipeline for datasets downloaded from public database implemented in Snakemake that takes either raw fastqs or assemblies as input.
+
+If you downloaded assemblies, click [here](README_assemblies.md), otherwise, continue reading the instructions on how to process raw reads. **You do not need to download the fastqs as the pipeline does it for you.**
 
 ### Summary
 
@@ -16,22 +18,76 @@ In short, it performs the following steps:
 * The assembled contigs from [SPAdes](https://github.com/ablab/spades) is then passed through [Prokka](https://github.com/tseemann/prokka) for annotation, [QUAST](https://quast.sourceforge.net/) for assembly statistics, [MLST](https://github.com/tseemann/mlst) for determining sequence type based on sequences of housekeeping genes, [AMRFinderPlus](https://github.com/ncbi/amr) to identify antimicrobial resistance genes, [skani](https://github.com/bluenote-1577/skani) to identify closest reference genome and [BUSCO](https://busco.ezlab.org/) for assembly completeness statistics.
 * [Multiqc](https://github.com/MultiQC/MultiQC) aggregates the final outputs from [Fastqc](https://github.com/s-andrews/FastQC) , [Prokka](https://github.com/tseemann/prokka) and [QUAST](https://quast.sourceforge.net/) to produce a HTML report
 
-The workflow generates all the output in the output prefix folder set in the config file (instructions on setup found [below](#config)). Each workflow steps gets its own individual folder as shown:
+The workflow generates all the output in the output prefix folder set in the config file (instructions on setup found [below](#config)). Each workflow steps gets its own individual folder as shown. **Note that this overview does not capture all possible outputs from each tool; it only highlights the primary directories and some of their contents.**
 
 ```
-results/2025-04-09_Project_MDHHS_pubQCD/
+results/2025-04-29_Project_MRSA_USA_300_raw_reads_pubQCD/
+├── 2025-04-29_Project_MRSA_USA_300_raw_reads_pubQCD_Report
+│   ├── data
+│   │   ├── 2025-04-29_Project_MRSA_USA_300_raw_reads_pubQCD_Final_Coverage.txt
+│   │   ├── 2025-04-29_Project_MRSA_USA_300_raw_reads_pubQCD_MLST_results.csv
+│   │   ├── 2025-04-29_Project_MRSA_USA_300_raw_reads_pubQCD_QC_summary.csv
+│   │   └── 2025-04-29_Project_MRSA_USA_300_raw_reads_pubQCD_Skani_report_final.csv
 ├── downsample
-|    |—— sample_name
-|    └── sample_name_2
+│   └── SRR25346107
+│       ├── SRR25346107_R1_trim_paired.fastq.gz
+│       └── SRR25346107_R2_trim_paired.fastq.gz
 ├── mlst
+│   └── SRR25346107
+│       └── report.tsv
 ├── prokka
+│   └── SRR25346107
+│       ├── SRR25346107.gbk
+│       ├── SRR25346107.gff
+│       ├── SRR25346107.tsv
+│       └── SRR25346107.txt
 ├── quality_aftertrim
+│   └── SRR25346107
+│       ├── SRR25346107_Forward
+│       │   ├── SRR25346107_R1_trim_paired_fastqc.html
+│       │   └── SRR25346107_R1_trim_paired_fastqc.zip
 ├── quality_raw
+│   └── SRR25346107
+│       ├── SRR25346107_Forward
+│       │   ├── SRR25346107_R1_fastqc.html
+│       │   └── SRR25346107_R1_fastqc.zip
+│       └── SRR25346107_Reverse
+│           ├── SRR25346107_R2_fastqc.html
+│           └── SRR25346107_R2_fastqc.zip
 ├── quast
+│   └── SRR25346107
+│       ├── quast.log
+│       ├── report.html
+│       ├── report.pdf
+│       ├── report.tex
+│       ├── report.tsv
+│       ├── report.txt
+│       ├── transposed_report.tex
+│       ├── transposed_report.tsv
+│       └── transposed_report.txt
 ├── raw_coverage
+│   └── SRR25346107
+│       └── SRR25346107_coverage.json
 ├── skani
+│   └── SRR25346107
+│       └── SRR25346107_skani_output.txt
 ├── spades
+│   └── SRR25346107
+│       ├── assembly_graph_after_simplification.gfa
+│       ├── assembly_graph.fastg
+│       ├── assembly_graph_with_scaffolds.gfa
+│       ├── before_rr.fasta
+│       ├── contigs.fasta
+│       ├── spades.log
+│       ├── SRR25346107_contigs_l1000.fasta
+│       └── tmp
 └── trimmomatic
+    └── SRR25346107
+        ├── SRR25346107_R1_trim_paired.fastq.gz
+        ├── SRR25346107_R1_trim_paired.fastq.gz_fastqchk.txt
+        ├── SRR25346107_R1_trim_unpaired.fastq.gz
+        ├── SRR25346107_R2_trim_paired.fastq.gz
+        └── SRR25346107_R2_trim_unpaired.fastq.gz
 ```
 
 
@@ -80,45 +136,22 @@ module load snakemake singularity
 This workflow makes use of singularity containers available through [State Public Health Bioinformatics group](https://github.com/StaPH-B/docker-builds). If you are working on Great Lakes (umich cluster)—you can load snakemake and singularity modules as shown above. However, if you are running it on your local or other computing platform, ensure you have snakemake and singularity installed.
 
 
-## Setup config, samples and cluster files
+## Setup config, cluster and SRA files
 
 **_If you are just testing this pipeline, the config and sample files are already loaded with test data, so you do not need to make any additional changes to them. However, it is a good idea to change the prefix (name of your output folder) in the config file to give you an idea of what variables need to be modified when running your own samples on pubQCD._**
 
 ### Config
-As an input, the snakemake file takes a config file where you can set the path to `sample.csv`, path to your raw sequencing reads, path to adapter fasta file etc. Instructions on how to modify `config/config.yaml` is found in `config.yaml`. 
+As an input, the snakemake file takes a config file where you can set the path to `sample_assembly.csv`, path to your raw sequencing reads, path to adapter fasta file etc. Instructions on how to modify `config/config.yaml` is found in `config.yaml`. 
 
-### Samples
-Add samples to `config/sample.csv` following the explanation provided below. `sample.csv` should be a comma seperated file consisting of two columns—`sample_id` and `illumina_r1`.
-
-* `sample_id` is the prefix that should be extracted from your FASTQ reads. For example, in  your raw FASTQ files directory, if you have a file called `Rush_KPC_110_R1.fastq.gz`, your sample_id would be `Rush_KPC_110`.
-
-* `illumina_r1` is the name of the entire raw FASTQ file. In the same directory,  if your file is called `Rush_KPC_110_R1.fastq.gz`, your sample_id would be `Rush_KPC_110_R1.fastq.gz`. **_Only include forward reads._**
-
-You can create sample.csv file using the following for loop. Replace *path_to_your_raw_reads* below with the actual path to your raw sequencing reads.
-
-```
-
-echo "sample_id,illumina_r1" > config/sample.csv
-
-for read1 in path_to_your_raw_reads/*_R1.fastq.gz; do
-    sample_id=$(basename $read1 | sed 's/_R1.fastq.gz//g')
-    read1_basename=$(basename $read1)
-    echo $sample_id,$read1_basename
-done >> config/sample.csv
-
-```
 
 ### Cluster file
 
-Reduce the walltime (to ~6 hours) in `config/cluster.json` to ensure the jobs are being submitted in a timely manner. 
+Increase/reduce the walltime depending on the number of samples you have in `config/cluster.json` to ensure the jobs are being submitted in a timely manner. 
+
+### SRA
+Download a text file of the SRA IDs of the genomes you want to run through the pipeline from NCBI/SRA/etc. and create a column called SRA_ID with the values being the sra ids.
 
 ## Quick start
-
->  Start an interactive session before you run the pipeline. 
-
-```
-salloc --mem-per-cpu=10G --account=esnitkin1
-```
 
 ### Run pubQCD on a set of samples.
 
@@ -126,28 +159,14 @@ salloc --mem-per-cpu=10G --account=esnitkin1
 
 ```
 
-snakemake -s workflow/pubQCD.smk --dryrun -p
+snakemake -s workflow/download_genomes.smk --dryrun -p
 
 ```
 
-> Run pubQCD locally
 
-```
-
-snakemake -s worfklow/puQCD.smk -p --configfile config/config.yaml --cores all
-
-```
-
->Run pubQCD on Great lakes HPC
-
-```
-
-snakemake -s workflow/pubQCD.smk -p --use-conda --use-singularity --use-envmodules -j 999 --cluster "sbatch -A {cluster.account} -p {cluster.partition} -N {cluster.nodes}  -t {cluster.walltime} -c {cluster.procs} --mem-per-cpu {cluster.pmem} --output=slurm_out/slurm-%j.out" --conda-frontend conda --cluster-config config/cluster.json --configfile config/config.yaml --latency-wait 1000 --nolock
-
-```
 > Submit pubQCD as a batch job. (recommended)
 
-Change these `SBATCH` commands: `--job-name` to a more descriptive name like run_pubQCD, `--mail-user` to your email address, `--time` depending on the number of samples you have (should be more than what you specified in `cluster.json`). Feel free to make changes to the other flags if you are comfortable doing so. Once you have made the necessary changes, save the below script as `bash_script_to_run_pubQCD.sbat` or you can make changes directly in the slurm script in the pubQCD folder. Don't forget to submit pubQCD to Slurm! `sbatch bash_script_to_run_pubQCD.sbat`.
+Change these `SBATCH` commands: `--job-name` to a more descriptive name like run_pubQCD, `--mail-user` to your email address, `--time` depending on the number of samples you have (should be more than what you specified in `cluster.json`). Feel free to make changes to the other flags if you are comfortable doing so. Once you have made the necessary changes, save the below script as `bash_script_to_run_raw_reads_pubQCD.sbat` or you can make changes directly in the slurm script in the pubQCD folder. Don't forget to submit pubQCD to Slurm! `sbatch bash_script_to_run_raw_reads_pubQCD.sbat`.
 
 ```
 #!/bin/bash
@@ -155,17 +174,22 @@ Change these `SBATCH` commands: `--job-name` to a more descriptive name like run
 #SBATCH --job-name=run_pubQCD
 #SBATCH --mail-type=BEGIN,END,FAIL
 #SBATCH --mail-user=youremail@umich.edu
-#SBATCH --cpus-per-task=5
+#SBATCH --cpus-per-task=3
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --mem-per-cpu=10gb
-#SBATCH --time=12:15:00
+#SBATCH --time=08:15:00
 #SBATCH --account=esnitkin1
 #SBATCH --partition=standard
 
 # Load necessary modules
 module load Bioinformatics
 module load snakemake singularity
+
+snakemake -s workflow/download_genomes.smk -p --use-conda --use-singularity --use-envmodules -j 999 \
+    --cluster "sbatch -A {cluster.account} -p {cluster.partition} -N {cluster.nodes} -t {cluster.walltime} -c {cluster.procs} --mem-per-cpu {cluster.pmem} --output=slurm_out/slurm-%j.out" \
+    --conda-frontend conda --cluster-config config/cluster.json --configfile config/config.yaml --latency-wait 1000 --nolock 
+
 
 # Extract prefix from the YAML config file
 PREFIX=$(grep '^prefix:' config/config.yaml | awk '{print $2}')

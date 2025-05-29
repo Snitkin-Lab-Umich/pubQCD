@@ -1,0 +1,21 @@
+#!/bin/bash
+
+#SBATCH --job-name=run_pubQCD
+#SBATCH --mail-type=BEGIN,END,FAIL
+#SBATCH --mail-user=youremail@umich.edu
+#SBATCH --cpus-per-task=3
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=1
+#SBATCH --mem-per-cpu=10gb
+#SBATCH --time=08:00:00
+#SBATCH --account=esnitkin1
+#SBATCH --partition=standard
+
+# Load necessary modules
+module load Bioinformatics
+module load snakemake singularity
+
+# Run main pipeline
+snakemake -s workflow/pubQCD_assembly.smk -p --use-conda --use-singularity --use-envmodules -j 999 \
+    --cluster "sbatch -A {cluster.account} -p {cluster.partition} -N {cluster.nodes} -t {cluster.walltime} -c {cluster.procs} --mem-per-cpu {cluster.pmem} --output=assembly_slurm_out/slurm-%j.out" \
+    --conda-frontend conda --cluster-config config/cluster.json --configfile config/config_assembly.yaml --latency-wait 1000 --nolock 

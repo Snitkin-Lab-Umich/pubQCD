@@ -1,21 +1,20 @@
 # Configuration settings for Snakemake
 
-# File should contain all the SRA ids with the column name SRA_ID
-# Path to genomes you want to download
-download_genomes: config/SRA.csv
+# Relative path where your samples are found
+samples: config/sample_assembly.csv
 
-# Directory where you want to house the public genomes 
-downloaded_genomes_outdir: /nfs/turbo/umms-esnitkin/Github/test_data/public_data_short_read/
+# Path to your raw sequencing reads  
+assembly: /nfs/turbo/umms-esnitkin/Project_MRSA_CM/Public_datasets/2025-04-18_all-MRSA-USA300_NCBI/illumina/2025-04-18_MRSA-USA300-assemblies_NCBI/assembly_downloads
 
-# Path to the directory that will contains the downloaded public genomes  
-short_reads: /nfs/turbo/umms-esnitkin/Github/test_data/public_data_short_read
+# Read suffix of samples— accepts either fasta or fna
+read_extension: fna
 
 # Directory prefix where the outputs will be saved to
-# Rename this to your preferred naming convention with this format:year-month-day_Project_Name_seq_data_ppubQCD
-prefix: 2025-04-29_Project_MRSA_USA_300_raw_reads_pubQCD 
+# Rename this to your preferred naming convention with this format:year-month-day_Project_Name_seq_data_pubQCD
+prefix: 2025-05-29_Project_MRSA_USA_300_assembly_pubQCD
 
 # Change to genome size of your organism of interest 
-genome_size: 6000000
+genome_size: 3000000
 
 # Cores used for busco and trimmomatic
 # Optional to change this
@@ -54,7 +53,7 @@ prokka: -kingdom Bacteria --force --rfam
 # QC thresholds 
 min_contigs: 10
 max_contigs: 500
-assembly_length: 8000000 # change this only if you have a cutoff size for all your genomes
+assembly_length: 3500000 # change this only if you have a cutoff size for all your genomes
 coverage: 20
 
 # Skani database

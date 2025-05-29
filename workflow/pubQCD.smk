@@ -6,8 +6,8 @@ import os
 import json
 
 # Run workflow until coverage
-samples_df = pd.read_csv(config["samples"])
-SAMPLE = list(samples_df['sample_id'])
+samples_df = pd.read_csv(config["download_genomes"])
+SAMPLE = list(samples_df['SRA_ID'])
 PREFIX = config["prefix"]
 
 if not os.path.exists(f"results/{PREFIX}/sample_files"):
@@ -59,10 +59,13 @@ rule coverage:
         coverage = "results/{prefix}/raw_coverage/{sample}/{sample}_coverage.json",
     params:
         size = config["genome_size"]
-    singularity:
-        "docker://staphb/fastq-scan:1.0.1"
-    shell:
-        "zcat {input.r1} {input.r2} | fastq-scan -g {params.size} > {output.coverage}"
+    wrapper:
+        "file:workflow/wrapper_functions/coverage"
+
+    # singularity:
+    #     "docker://staphb/fastq-scan:1.0.1"
+    # shell:
+    #     "zcat {input.r1} {input.r2} | fastq-scan -g {params.size} > {output.coverage}"
 
 def samples_that_passed_coverage(coverage_json, passed_csv, updated_samples_file, outdir):
     with open(coverage_json) as f:
@@ -257,7 +260,7 @@ rule bioawk:
         "docker://lbmc/bioawk:1.0"
     shell:
         """
-        ./bioawk.sh {input.spades_assembly} {output.spades_l1000_assembly} {params.out_dir} {params.prefix}
+        workflow/scripts/bioawk.sh {input.spades_assembly} {output.spades_l1000_assembly} {params.out_dir} {params.prefix}
         """
 
 rule prokka:
@@ -296,10 +299,9 @@ rule quast:
     #    "quast"
     shell:
         """
-        ./quast.sh {input.spades_l1000_assembly} {params.outdir} 
+        workflow/scripts/quast.sh {input.spades_l1000_assembly} {params.outdir} 
         """
-        #"quast.py {input.spades_l1000_assembly} -o {params.outdir} --contig-thresholds 0,1000,5000,10000,25000,50000"
-
+        
 rule mlst:
     input:
         spades_l1000_assembly = "results/{prefix}/spades/{sample}/{sample}_contigs_l1000.fasta",
@@ -317,7 +319,6 @@ rule mlst:
     #    "mlst"
     shell:
         "mlst {input.spades_l1000_assembly} > {output.mlst_report}"
-
 
 rule busco:
     input:

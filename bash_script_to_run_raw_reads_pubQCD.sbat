@@ -3,17 +3,22 @@
 #SBATCH --job-name=run_pubQCD
 #SBATCH --mail-type=BEGIN,END,FAIL
 #SBATCH --mail-user=youremail@umich.edu
-#SBATCH --cpus-per-task=5
+#SBATCH --cpus-per-task=3
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --mem-per-cpu=10gb
-#SBATCH --time=12:15:00
+#SBATCH --time=08:15:00
 #SBATCH --account=esnitkin1
 #SBATCH --partition=standard
 
 # Load necessary modules
 module load Bioinformatics
 module load snakemake singularity
+
+snakemake -s workflow/download_genomes.smk -p --use-conda --use-singularity --use-envmodules -j 999 \
+    --cluster "sbatch -A {cluster.account} -p {cluster.partition} -N {cluster.nodes} -t {cluster.walltime} -c {cluster.procs} --mem-per-cpu {cluster.pmem} --output=slurm_out/slurm-%j.out" \
+    --conda-frontend conda --cluster-config config/cluster.json --configfile config/config.yaml --latency-wait 1000 --nolock 
+
 
 # Extract prefix from the YAML config file
 PREFIX=$(grep '^prefix:' config/config.yaml | awk '{print $2}')
@@ -60,8 +65,3 @@ snakemake -s workflow/pubQCD.smk -p --use-conda --use-singularity --use-envmodul
 
 # Run Snakemake for the last time to generate QC report 
 snakemake -s workflow/pubQCD_report.smk -p --use-singularity --cores all
-
-
-
-
-
