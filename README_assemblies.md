@@ -139,14 +139,6 @@ snakemake -s workflow/pubQCD_assembly.smk --dryrun -p
 
 ```
 
-> Run pubQCD locally
-
-```
-
-snakemake -s worfklow/puQCD.smk -p --configfile config/config.yaml --cores all
-
-```
-
 >Run pubQCD on terminal directly. 
 
 ```
