@@ -10,13 +10,13 @@ As part of the SOP in the [Snitkin lab](https://thesnitkinlab.com/index.php), th
 
 In short, it performs the following steps:
 
-* [Fastqc](https://github.com/s-andrews/FastQC) is used to generate HTML reports to asses quality of sequencing reads before and after trimming reads. 
-* Trims and filters low-quality bases and adapter sequences from raw FASTQ reads using [Trimmomatic](https://github.com/usadellab/Trimmomatic).
-* [fastq-scan](https://github.com/rpetit3/fastq-scan) is used to estimate genome coverage of FASTQ files.
-* Assembles trimmed reads into contigs using [SPAdes](https://github.com/ablab/spades).
+* [Fastqc](https://github.com/s-andrews/FastQC)(v0.12.1) is used to generate HTML reports to asses quality of sequencing reads before and after trimming reads. 
+* Trims and filters low-quality bases and adapter sequences from raw FASTQ reads using [Trimmomatic](https://github.com/usadellab/Trimmomatic)(v0.39).
+* [fastq-scan](https://github.com/rpetit3/fastq-scan)(v1.0.1) is used to estimate genome coverage of FASTQ files.
+* Assembles trimmed reads into contigs using [SPAdes](https://github.com/ablab/spades)(v4.0.0).
 <!--* [Kraken2](https://github.com/DerrickWood/kraken2) is used to provide detailed reports on the taxonomic composition of the trimmed raw reads. -->
-* The assembled contigs from [SPAdes](https://github.com/ablab/spades) is then passed through [Prokka](https://github.com/tseemann/prokka) for annotation, [QUAST](https://quast.sourceforge.net/) for assembly statistics, [MLST](https://github.com/tseemann/mlst) for determining sequence type based on sequences of housekeeping genes, [skani](https://github.com/bluenote-1577/skani) to identify closest reference genome and [BUSCO](https://busco.ezlab.org/) for assembly completeness statistics.
-* [Multiqc](https://github.com/MultiQC/MultiQC) aggregates the final outputs from [Fastqc](https://github.com/s-andrews/FastQC) , [Prokka](https://github.com/tseemann/prokka) and [QUAST](https://quast.sourceforge.net/) to produce a HTML report
+* The assembled contigs from [SPAdes](https://github.com/ablab/spades) is then passed through [Prokka](https://github.com/tseemann/prokka)(v1.14.6) for annotation, [QUAST](https://quast.sourceforge.net/)(v5.0.2) for assembly statistics, [MLST](https://github.com/tseemann/mlst)(v2.23.0) for determining sequence type based on sequences of housekeeping genes, [skani](https://github.com/bluenote-1577/skani)(v0.2.1) to identify closest reference genome and [BUSCO](https://busco.ezlab.org/)(v5.7.1) for assembly completeness statistics.
+* [Multiqc](https://github.com/MultiQC/MultiQC)(v1.19) aggregates the final outputs from [Fastqc](https://github.com/s-andrews/FastQC) , [Prokka](https://github.com/tseemann/prokka) and [QUAST](https://quast.sourceforge.net/) to produce a HTML report
 
 The workflow generates all the output in the output prefix folder set in the config file (instructions on setup found [below](#config)). Each workflow steps gets its own individual folder as shown. **Note that this overview does not capture all possible outputs from each tool; it only highlights the primary directories and some of their contents.**
 
