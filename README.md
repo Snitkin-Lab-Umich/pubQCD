@@ -6,7 +6,7 @@ If you downloaded assemblies, click [here](README_assemblies.md), otherwise, con
 
 ### Summary
 
-As part of the SOP in the [Snitkin lab](https://thesnitkinlab.com/index.php), this pipeline should be run on raw sequencing data (separate pipeline for assemblies coming soon!) as soon as the data is downloaded from a public database. 
+As part of the SOP in the [Snitkin lab](https://thesnitkinlab.com/index.php), this pipeline should be run on paired ends reads as soon as the data is downloaded from a public database. 
 
 In short, it performs the following steps:
 
