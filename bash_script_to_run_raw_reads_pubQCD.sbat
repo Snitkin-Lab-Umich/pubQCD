@@ -64,4 +64,6 @@ snakemake -s workflow/pubQCD.smk -p --use-conda --use-singularity --use-envmodul
     --conda-frontend conda --cluster-config config/cluster.json --configfile config/config.yaml --latency-wait 1000 --nolock 
 
 # Run Snakemake for the last time to generate QC report 
-snakemake -s workflow/pubQCD_report.smk -p --use-singularity --cores all
+snakemake -s workflow/pubQCD_report.smk -p --use-singularity -j 999 \
+    --cluster "sbatch -A {cluster.account} -p {cluster.partition} -N {cluster.nodes} -t {cluster.walltime} -c {cluster.procs} --mem-per-cpu {cluster.pmem} --output=slurm_out/slurm-%j.out" --cluster-config config/cluster.json --configfile config/config.yaml --latency-wait 1000 --nolock 
+
