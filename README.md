@@ -131,6 +131,15 @@ module load Bioinformatics snakemake singularity
 module load snakemake singularity
 
 ```
+
+> Ensure scripts to use in pipeline are executable
+```
+
+chmod +x workflow/scripts/bioawk.sh
+chmod +x workflow/scripts/quast.sh
+
+```
+
 -->
 
 This workflow makes use of singularity containers available through [State Public Health Bioinformatics group](https://github.com/StaPH-B/docker-builds). If you are working on Great Lakes (umich cluster)—you can load snakemake and singularity modules as shown above. However, if you are running it on your local or other computing platform, ensure you have snakemake and singularity installed.
