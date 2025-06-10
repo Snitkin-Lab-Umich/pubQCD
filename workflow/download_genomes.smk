@@ -10,14 +10,14 @@ SRA_IDS = list(samples_df['SRA_ID'])
 
 rule all:
     input:
-        # expand(os.path.join(config["downloaded_genomes_outdir"], "{sra_id}", "{sra_id}.sra"), sra_id=SRA_IDS),
-        expand(os.path.join(config["downloaded_genomes_outdir"], "{sra_id}_R1.fastq.gz"), sra_id=SRA_IDS),
+        # expand(os.path.join(config["short_reads"], "{sra_id}", "{sra_id}.sra"), sra_id=SRA_IDS),
+        expand(os.path.join(config["short_reads"], "{sra_id}_R1.fastq.gz"), sra_id=SRA_IDS),
 
 rule download_sra:
     output:
-        temp(os.path.join(config["downloaded_genomes_outdir"], "{sra_id}", "{sra_id}.sra"))
+        temp(os.path.join(config["short_reads"], "{sra_id}", "{sra_id}.sra"))
     params:
-        outdir = config["downloaded_genomes_outdir"],
+        outdir = config["short_reads"],
         sra_id = lambda wildcards: wildcards.sra_id
     singularity:
         "docker://staphb/sratoolkit:3.2.1"
@@ -29,11 +29,11 @@ rule download_sra:
 
 rule fastq_dump:
     input:
-        sra=os.path.join(config["downloaded_genomes_outdir"], "{sra_id}","{sra_id}.sra")
+        sra=os.path.join(config["short_reads"], "{sra_id}","{sra_id}.sra")
     output:
-        R1=os.path.join(config["downloaded_genomes_outdir"], "{sra_id}_R1.fastq.gz")
+        R1=os.path.join(config["short_reads"], "{sra_id}_R1.fastq.gz")
     params:
-        outdir=config["downloaded_genomes_outdir"],
+        outdir=config["short_reads"],
         sra_id = lambda wildcards: wildcards.sra_id
     singularity:
         "docker://staphb/sratoolkit:3.2.1"
