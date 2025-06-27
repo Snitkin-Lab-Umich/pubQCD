@@ -153,7 +153,7 @@ Download a text file of the SRA IDs of the genomes you want to run through the p
 
 ## Quick start
 
-**If you already downloaded your genomes, skip [here].(#run-pubqcd-on-a-set-of-samples).**
+**If you already downloaded your genomes, skip [here](#run-pubqcd-on-a-set-of-samples).**
 
 ### Download genomes first.
 
