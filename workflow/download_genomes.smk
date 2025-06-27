@@ -5,7 +5,7 @@ import pandas as pd
 import os
 import json
 
-samples_df = pd.read_csv(config["download_genomes"])
+samples_df = pd.read_csv(config["genomes"])
 SRA_IDS = list(samples_df['SRA_ID'])
 
 rule all:
@@ -45,6 +45,6 @@ rule fastq_dump:
         mv {params.sra_id}_pass_2.fastq.gz {params.sra_id}_R2.fastq.gz
         """
 
-"""
-END OF PIPELINE
-"""
+# """
+# END OF PIPELINE
+# """

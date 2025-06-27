@@ -6,7 +6,7 @@ If you downloaded assemblies, click [here](README_assemblies.md), otherwise, con
 
 ### Summary
 
-As part of the SOP in the [Snitkin lab](https://thesnitkinlab.com/index.php), this pipeline should be run on paired ends reads as soon as the data is downloaded from a public database. 
+As part of the SOP in the [Snitkin lab](https://thesnitkinlab.com/index.php), this pipeline should be run on raw sequencing data (separate pipeline for assemblies coming soon!) as soon as the data is downloaded from a public database. 
 
 In short, it performs the following steps:
 
@@ -118,13 +118,6 @@ cd pubQCD
 
 ```
 
-> To ensure a clean starting environment, deactivate and/or remove any modules loaded.
-
-```
-module purge
-conda deactivate
-```
-
 > Load Bioinformatics, snakemake and singularity modules from Great Lakes modules.
 
 ```
@@ -132,15 +125,13 @@ conda deactivate
 module load Bioinformatics snakemake singularity
 
 ```
-
-
-> Ensure scripts to use in pipeline are executable
+<!--
 ```
 
-chmod +x workflow/scripts/bioawk.sh
-chmod +x workflow/scripts/quast.sh
+module load snakemake singularity
 
 ```
+-->
 
 This workflow makes use of singularity containers available through [State Public Health Bioinformatics group](https://github.com/StaPH-B/docker-builds). If you are working on Great Lakes (umich cluster)—you can load snakemake and singularity modules as shown above. However, if you are running it on your local or other computing platform, ensure you have snakemake and singularity installed.
 
@@ -158,13 +149,13 @@ As an input, the snakemake file takes a config file where you can set the path t
 Increase/reduce the walltime depending on the number of samples you have in `config/cluster.json` to ensure the jobs are being submitted in a timely manner. 
 
 ### SRA
-This step is only for folks who have not downloaded their genomes from NCBI. If you have already downloaded your genomes of interest, skip this step and continue [here](#quick-start). 
-
 Download a text file of the SRA IDs of the genomes you want to run through the pipeline from NCBI/SRA/etc. and create a column called SRA_ID with the values being the sra ids.
 
-## Quick start--download genomes
+## Quick start
 
-### Run pubQCD on a set of samples.
+**If you already downloaded your genomes, skip [here].(#run-pubqcd-on-a-set-of-samples).**
+
+### Download genomes first.
 
 > Preview the first two steps in pubQCD by performing a dryrun of the pipeline. 
 
@@ -177,7 +168,7 @@ snakemake -s workflow/download_genomes.smk --dryrun -p
 
 > Submit pubQCD as a batch job. (recommended)
 
-Change these `SBATCH` commands: `--job-name` to a more descriptive name like run_pubQCD, `--mail-user` to your email address, `--time` depending on the number of samples you have (should be more than what you specified in `cluster.json`). Feel free to make changes to the other flags if you are comfortable doing so. Once you have made the necessary changes, save the below script as `bash_script_to_download_raw_reads_pubQCD.sbat` or you can make changes directly in the slurm script in the pubQCD folder. Don't forget to submit pubQCD to Slurm! `sbatch bash_script_to_download_raw_reads_pubQCD.sbat`.
+Change these `SBATCH` commands: `--job-name` to a more descriptive name like run_pubQCD, `--mail-user` to your email address, `--time` depending on the number of samples you have (should be more than what you specified in `cluster.json`). Feel free to make changes to the other flags if you are comfortable doing so. Once you have made the necessary changes, save the below script as `bash_script_to_run_raw_reads_pubQCD.sbat` or you can make changes directly in the slurm script in the pubQCD folder. Don't forget to submit pubQCD to Slurm! `sbatch bash_script_to_download_and_run_raw_reads_pubQCD.sbat`.
 
 ```
 #!/bin/bash
@@ -195,71 +186,28 @@ Change these `SBATCH` commands: `--job-name` to a more descriptive name like run
 
 # Load necessary modules
 module load Bioinformatics
-module load snakemake singularity
+module load snakemake singularity mamba
 
+# Download genomes pipeline
 snakemake -s workflow/download_genomes.smk -p --use-conda --use-singularity --use-envmodules -j 999 \
     --cluster "sbatch -A {cluster.account} -p {cluster.partition} -N {cluster.nodes} -t {cluster.walltime} -c {cluster.procs} --mem-per-cpu {cluster.pmem} --output=slurm_out/slurm-%j.out" \
-    --conda-frontend conda --cluster-config config/cluster.json --configfile config/config.yaml --latency-wait 1000 --nolock 
+    --conda-frontend mamba --cluster-config config/cluster.json --configfile config/config.yaml --latency-wait 1000 --nolock 
+######
 
-
-# Extract prefix from the YAML config file
-PREFIX=$(grep '^prefix:' config/config.yaml | awk '{print $2}')
-
-# Define the file paths dynamically
-PASS_COV_FILE="results/${PREFIX}/sample_files/samples_passed_coverage.csv"
-PASS_ASSEMBLY_FILE="results/${PREFIX}/sample_files/samples_passed_assembly.csv"
-
-echo "PASS_COV_FILE: $PASS_COV_FILE"
-echo "PASS_ASSEMBLY_FILE: $PASS_ASSEMBLY_FILE"
-
-# Run Snakemake the first time -- until coverage
-snakemake -s workflow/pubQCD.smk -p --use-conda --use-singularity --use-envmodules -j 999 \
+# Run Snakemake 
+snakemake -s workflow/Snakefile -p --use-conda --use-singularity --use-envmodules -j 999 \
     --cluster "sbatch -A {cluster.account} -p {cluster.partition} -N {cluster.nodes} -t {cluster.walltime} -c {cluster.procs} --mem-per-cpu {cluster.pmem} --output=slurm_out/slurm-%j.out" \
-    --conda-frontend conda --cluster-config config/cluster.json --configfile config/config.yaml --latency-wait 1000 --nolock 
-
-# samples_passed_coverage.csv should have been created in the Snakemake command above
-# If not found, throw an error and exit
-if [ ! -s "$PASS_COV_FILE" ] || [ "$(wc -l < "$PASS_COV_FILE")" -le 1 ]; then
-    echo "Error: $PASS_COV_FILE is missing or does not have any samples. Exiting."
-    exit 1
-else
-    echo "$PASS_COV_FILE detected. Running second part of the workflow."
-fi
-
-# Run Snakemake again to run the second part of the workflow --until assembly
-snakemake -s workflow/pubQCD.smk -p --use-conda --use-singularity --use-envmodules -j 999 \
-    --cluster "sbatch -A {cluster.account} -p {cluster.partition} -N {cluster.nodes} -t {cluster.walltime} -c {cluster.procs} --mem-per-cpu {cluster.pmem} --output=slurm_out/slurm-%j.out" \
-    --conda-frontend conda --cluster-config config/cluster.json --configfile config/config.yaml --latency-wait 1000 --nolock 
-
-# samples_passed_assembly.csv should have been created in the Snakemake command above
-# If not found, throw an error and exit
-if [ ! -s "$PASS_ASSEMBLY_FILE" ] || [ "$(wc -l < "$PASS_ASSEMBLY_FILE")" -le 1 ]; then
-    echo "Error: $PASS_ASSEMBLY_FILE is missing or does not have any samples. Exiting."
-    exit 1
-else
-    echo "$PASS_ASSEMBLY_FILE detected. Running second part of the workflow."
-fi
-
-# Run Snakemake to finish running the rest of the pipeline
-snakemake -s workflow/pubQCD.smk -p --use-conda --use-singularity --use-envmodules -j 999 \
-    --cluster "sbatch -A {cluster.account} -p {cluster.partition} -N {cluster.nodes} -t {cluster.walltime} -c {cluster.procs} --mem-per-cpu {cluster.pmem} --output=slurm_out/slurm-%j.out" \
-    --conda-frontend conda --cluster-config config/cluster.json --configfile config/config.yaml --latency-wait 1000 --nolock 
-
-# Run Snakemake for the last time to generate QC report 
-snakemake -s workflow/pubQCD_report.smk -p --use-singularity --cores all
+    --conda-frontend mamba --cluster-config config/cluster.json --configfile config/config.yaml --latency-wait 1000 --nolock 
 
 ```
-## Quick start
 
-**You should have already downloaded your genomes before running the following steps. If you are yet to download and have a list of SRA IDs as mentioned [here](#setup-config-cluster-and-sra-files) in the SRA section, start [here](#quick-start--download-genomes)**
-
-### Run pubQCD on a set of samples.
+### Run pubQCD on a set of samples. 
 
 > Preview the first two steps in pubQCD by performing a dryrun of the pipeline. 
 
 ```
 
-snakemake -s  workflow/pubQCD.smk --dryrun -p
+snakemake -s workflow/Snakefile --dryrun -p
 
 ```
 
@@ -283,55 +231,15 @@ Change these `SBATCH` commands: `--job-name` to a more descriptive name like run
 
 # Load necessary modules
 module load Bioinformatics
-module load snakemake singularity
+module load snakemake singularity mamba
 
-# Extract prefix from the YAML config file
-PREFIX=$(grep '^prefix:' config/config.yaml | awk '{print $2}')
-
-# Define the file paths dynamically
-PASS_COV_FILE="results/${PREFIX}/sample_files/samples_passed_coverage.csv"
-PASS_ASSEMBLY_FILE="results/${PREFIX}/sample_files/samples_passed_assembly.csv"
-
-echo "PASS_COV_FILE: $PASS_COV_FILE"
-echo "PASS_ASSEMBLY_FILE: $PASS_ASSEMBLY_FILE"
-
-# Run Snakemake the first time -- until coverage
-snakemake -s workflow/pubQCD.smk -p --use-conda --use-singularity --use-envmodules -j 999 \
+# Run Snakemake 
+snakemake -s workflow/Snakefile -p --use-conda --use-singularity --use-envmodules -j 999 \
     --cluster "sbatch -A {cluster.account} -p {cluster.partition} -N {cluster.nodes} -t {cluster.walltime} -c {cluster.procs} --mem-per-cpu {cluster.pmem} --output=slurm_out/slurm-%j.out" \
-    --conda-frontend conda --cluster-config config/cluster.json --configfile config/config.yaml --latency-wait 1000 --nolock 
-
-# samples_passed_coverage.csv should have been created in the Snakemake command above
-# If not found, throw an error and exit
-if [ ! -s "$PASS_COV_FILE" ] || [ "$(wc -l < "$PASS_COV_FILE")" -le 1 ]; then
-    echo "Error: $PASS_COV_FILE is missing or does not have any samples. Exiting."
-    exit 1
-else
-    echo "$PASS_COV_FILE detected. Running second part of the workflow."
-fi
-
-# Run Snakemake again to run the second part of the workflow --until assembly
-snakemake -s workflow/pubQCD.smk -p --use-conda --use-singularity --use-envmodules -j 999 \
-    --cluster "sbatch -A {cluster.account} -p {cluster.partition} -N {cluster.nodes} -t {cluster.walltime} -c {cluster.procs} --mem-per-cpu {cluster.pmem} --output=slurm_out/slurm-%j.out" \
-    --conda-frontend conda --cluster-config config/cluster.json --configfile config/config.yaml --latency-wait 1000 --nolock 
-
-# samples_passed_assembly.csv should have been created in the Snakemake command above
-# If not found, throw an error and exit
-if [ ! -s "$PASS_ASSEMBLY_FILE" ] || [ "$(wc -l < "$PASS_ASSEMBLY_FILE")" -le 1 ]; then
-    echo "Error: $PASS_ASSEMBLY_FILE is missing or does not have any samples. Exiting."
-    exit 1
-else
-    echo "$PASS_ASSEMBLY_FILE detected. Running second part of the workflow."
-fi
-
-# Run Snakemake to finish running the rest of the pipeline
-snakemake -s workflow/pubQCD.smk -p --use-conda --use-singularity --use-envmodules -j 999 \
-    --cluster "sbatch -A {cluster.account} -p {cluster.partition} -N {cluster.nodes} -t {cluster.walltime} -c {cluster.procs} --mem-per-cpu {cluster.pmem} --output=slurm_out/slurm-%j.out" \
-    --conda-frontend conda --cluster-config config/cluster.json --configfile config/config.yaml --latency-wait 1000 --nolock 
-
-# Run Snakemake for the last time to generate QC report 
-snakemake -s workflow/pubQCD_report.smk -p --use-singularity --cores all
+    --conda-frontend mamba --cluster-config config/cluster.json --configfile config/config.yaml --latency-wait 1000 --nolock 
 
 ```
+
 <!--![Alt text](./QCD_dag.svg)
 
 ### Gather Summary files and generate a report. 

@@ -273,64 +273,6 @@ def summary(prefix, outdir, skani_genome_size):
 
     # Rearrange the columns
     QC_summary_temp4 = QC_summary_temp4[new_columns]
-    
-    # Read in samples that failed coverage and assembly respectively
-    # failed_coverage_path = f"results/{prefix}/sample_files/samples_failed_coverage_summary.csv"
-    # failed_assembly_path = f"results/{prefix}/sample_files/samples_failed_assembly_summary.csv"
-
-    # Initialize empty dataframes for optional files
-    # failed_coverage_df = pd.DataFrame()
-    # failed_assembly_df = pd.DataFrame()
-
-    # # Read existing files
-    # if os.path.exists(failed_coverage_path):
-    #     failed_coverage_df = pd.read_csv(failed_coverage_path)
-
-    # if os.path.exists(failed_assembly_path):
-    #     failed_assembly_df = pd.read_csv(failed_assembly_path)
-
-    # # Find common columns with QC_summary_temp8
-    # if not failed_coverage_df.empty or not failed_assembly_df.empty:
-    #     common_columns = QC_summary_temp8.columns
-    #     if not failed_coverage_df.empty:
-    #         common_columns = common_columns.intersection(failed_coverage_df.columns)
-    #     if not failed_assembly_df.empty:
-    #         common_columns = common_columns.intersection(failed_assembly_df.columns)
-
-    #     # Select only the matching columns
-    #     QC_summary_temp8 = QC_summary_temp8[common_columns]
-    #     if not failed_coverage_df.empty:
-    #         failed_coverage_df = failed_coverage_df[common_columns]
-    #     if not failed_assembly_df.empty:
-    #         failed_assembly_df = failed_assembly_df[common_columns]
-
-    #     # Concatenate available dataframes
-    #     QC_summary_temp8 = pd.concat([QC_summary_temp8, failed_coverage_df, failed_assembly_df], ignore_index=True)
-
-    #     # Fill missing values
-    #     QC_summary_temp8 = QC_summary_temp8.fillna("NA")
-    #     QC_summary_temp8 = QC_summary_temp8[new_columns]
-        
-    # else:
-    #     # Rearrange the columns if no failed coverage/assembly files exist
-    #     QC_summary_temp8 = QC_summary_temp8[new_columns]
-
-    #     # # Ensure all dataframes have the same columns as QC_summary_temp8
-    #     # common_columns = QC_summary_temp8.columns.intersection(failed_assembly_df.columns).intersection(failed_coverage_df.columns)
-        
-    #     # # Select only the matching columns
-    #     # QC_summary_temp8 = QC_summary_temp8[common_columns]
-    #     # failed_assembly_df = failed_assembly_df[common_columns]
-    #     # failed_coverage_df = failed_coverage_df[common_columns]
-
-    #     # # Concatenate the dataframes
-    #     # QC_summary_temp8 = pd.concat([QC_summary_temp8, failed_assembly_df, failed_coverage_df], ignore_index=True)
-        
-    #     # QC_summary_temp8 = QC_summary_temp8.fillna("NA")
-    
-    # # Remove duplicates based on the "Sample" column
-    # if "Sample" in QC_summary_temp8.columns:
-    #     QC_summary_temp8 = QC_summary_temp8.drop_duplicates(subset=["Sample"])
 
     QC_summary_temp4.to_csv('results/%s/%s_Report/data/%s_QC_summary.csv' % (prefix, prefix, prefix), index=False)
 

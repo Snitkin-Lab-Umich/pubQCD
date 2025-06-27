@@ -36,7 +36,7 @@ def downsample_reads(file, file2, out1, out2, genome_size):
         print('Error running seqtk for extracting fastq statistics.')
         sys.exit(1)
 
-    with open("%s_fastqchk.txt" % file, 'rU') as file_open:
+    with open("%s_fastqchk.txt" % file, 'r') as file_open:
         for line in file_open:
             if line.startswith('min_len'):
                 line_split = line.split(';')

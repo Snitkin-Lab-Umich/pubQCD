@@ -2,7 +2,7 @@
 
 #SBATCH --job-name=run_pubQCD
 #SBATCH --mail-type=BEGIN,END,FAIL
-#SBATCH --mail-user=youremail@umich.edu
+#SBATCH --mail-user=dhatrib@umich.edu
 #SBATCH --cpus-per-task=3
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1

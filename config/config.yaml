@@ -1,18 +1,15 @@
 # Configuration settings for Snakemake
 
 # File should contain all the SRA ids with the column name SRA_ID
-# Path to genomes you want to download
-download_genomes: config/SRA.csv
+# Path to genomes you want to download/sample list you want to use
+genomes: config/SRA.csv
 
-# Directory where you want to house the public genomes 
-# downloaded_genomes_outdir: /nfs/turbo/umms-esnitkin/Github/test_data/public_data_short_read/
-
-# Path to the directory that will contains the downloaded public genomes  
+# Path to the directory that contains the downloaded public genomes  
 short_reads: /nfs/turbo/umms-esnitkin/Github/test_data/public_data_short_read
 
 # Directory prefix where the outputs will be saved to
 # Rename this to your preferred naming convention with this format:year-month-day_Project_Name_seq_data_ppubQCD
-prefix: 2025-06-05_Project_Test_Pipeline_raw_reads_pubQCD
+prefix: 2025-06-25_Project_Test_Pipeline_raw_reads_pubQCD 
 
 # Change to genome size of your organism of interest 
 genome_size: 6000000
