@@ -6,17 +6,16 @@ rule busco:
     params: 
         outdir = "results/{prefix}/busco/{sample}/",
         prefix = "{sample}",
-        threads = config["ncores"],
-        assembly_busco_out = "short_summary.specific.bacteria_odb10.{sample}.txt"
+        assembly_busco_out = "short_summary.specific.bacteria_odb12.{sample}.txt"
     #conda:
     #    "envs/busco.yaml"
     singularity:
-        "docker://staphb/busco:5.7.1-prok-bacteria_odb10_2024-01-08"
+        "docker://staphb/busco:6.0.0-prok-bacteria_odb12_2024-11-14"
     #envmodules:
     #    "Bioinformatics",
     #    "busco"
     shell:
         """
-        busco -f -i {input.spades_l1000_assembly} -m genome -l bacteria_odb10 -o {params.outdir}
+        busco -f -i {input.spades_l1000_assembly} -m genome -l bacteria_odb12 -o {params.outdir}
         cp {params.outdir}/{params.assembly_busco_out} {params.outdir}/{params.prefix}_busco_out.txt
         """
